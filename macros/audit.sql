@@ -19,6 +19,7 @@
 
     insert into {{ logging.get_audit_relation() }} (
         event_name, 
+        event_timestamp_utc, 
         event_timestamp, 
         event_schema, 
         event_model,
@@ -27,7 +28,8 @@
     
     values (
         '{{ event_name }}', 
-        {{dbt_utils.current_timestamp_in_utc()}}, 
+        {{dbt_utils_sqlserver.current_timestamp_in_utc()}}, 
+        {{dbt_utils_sqlserver.current_timestamp()}}, 
         {% if variable != None %}'{{ schema }}'{% else %}null::varchar(512){% endif %}, 
         {% if variable != None %}'{{ relation }}'{% else %}null::varchar(512){% endif %}, 
         '{{ invocation_id }}'
@@ -39,21 +41,25 @@
 {% macro create_audit_schema() %}
     IF NOT EXISTS ( SELECT  *
                 FROM    sys.schemas
-                WHERE   name = {{ logging.get_audit_schema() }} )
-    EXEC('CREATE SCHEMA {{ logging.get_audit_schema() }}');
+                WHERE   name =  {{ logging.get_audit_schema() | replace('"', "'") }} )
+    EXEC('CREATE SCHEMA {{ logging.get_audit_schema() | replace('"', "") }}');
 {% endmacro %}
 
 
 {% macro create_audit_log_table() %}
-
-    create table if not exists {{ logging.get_audit_relation() }}
-    (
+    IF NOT EXISTS ( SELECT  *
+                FROM    sysobjects
+                WHERE   name =  '{{ logging.get_audit_relation().identifier }}'  AND xtype='U')
+    EXEC('CREATE TABLE {{ logging.get_audit_relation() | replace('"', "") }} 
+            (
        event_name       varchar(512),
-       event_timestamp  {{dbt_utils.type_timestamp()}},
+       event_timestamp_utc  {{dbt_utils_sqlserver.type_timestamp()}},
+       event_timestamp  {{dbt_utils_sqlserver.type_timestamp()}},
        event_schema     varchar(512),
        event_model      varchar(512),
        invocation_id    varchar(512)
     )
+    ');
 
 {% endmacro %}
 
@@ -64,7 +70,7 @@
 
 
 {% macro log_run_end_event() %}
-    {{logging.log_audit_event('run completed')}}; commit;
+    {{logging.log_audit_event('run completed')}}
 {% endmacro %}
 
 

@@ -1,3 +1,2 @@
 packages:
  - git: "https://github.com/mikaelene/dbt-utils-sqlserver.git"
-   revision: 0.2.1
