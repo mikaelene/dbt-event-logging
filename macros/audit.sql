@@ -37,7 +37,10 @@
 
 
 {% macro create_audit_schema() %}
-    create schema if not exists {{ logging.get_audit_schema() }}
+    IF NOT EXISTS ( SELECT  *
+                FROM    sys.schemas
+                WHERE   name = {{ logging.get_audit_schema() }} )
+    EXEC('CREATE SCHEMA {{ logging.get_audit_schema() }}');
 {% endmacro %}
 
 
