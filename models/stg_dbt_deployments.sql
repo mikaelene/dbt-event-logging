@@ -19,7 +19,7 @@ aggregated as (
             end) as deployment_completed_at,
             
         count(distinct case 
-            when event_name ilike '%model%' then event_model 
+            when left(event_name,5) = 'model' then event_model 
             end) as models_deployed
     
     from events
