@@ -25,8 +25,13 @@ aggregated as (
             end) as deployment_completed_at
     
     from events
-    where event_name ilike '%model%'
-    group by 1, 2, 3
+    where lower(event_name) like lower('%model%')
+    group by {{dbt_utils.surrogate_key(
+            'event_model', 
+            'invocation_id'
+            )}},
+            invocation_id,
+            event_model
 
 )
 

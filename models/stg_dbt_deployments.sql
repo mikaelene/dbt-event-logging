@@ -23,7 +23,7 @@ aggregated as (
             end) as models_deployed
     
     from events
-    group by 1
+    group by invocation_id
 
 )
 
