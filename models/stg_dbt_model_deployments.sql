@@ -8,7 +8,7 @@ aggregated as (
 
     select 
     
-        {{dbt_utils.surrogate_key(
+        {{dbt_utils_sqlserver.surrogate_key(
             'event_model', 
             'invocation_id'
             )}} as model_deployment_id,
@@ -26,7 +26,7 @@ aggregated as (
     
     from events
     where lower(event_name) like lower('%model%')
-    group by {{dbt_utils.surrogate_key(
+    group by {{dbt_utils_sqlserver.surrogate_key(
             'event_model', 
             'invocation_id'
             )}},
