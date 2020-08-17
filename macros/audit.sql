@@ -47,9 +47,13 @@
 
 
 {% macro create_audit_log_table() %}
-    IF NOT EXISTS ( SELECT  *
-                FROM    sysobjects
-                WHERE   name =  '{{ logging.get_audit_relation().identifier }}'  AND xtype='U')
+    IF NOT EXISTS (
+                SELECT 1
+           FROM sys.tables t
+                JOIN sys.schemas s ON t.schema_id = s.schema_id
+           WHERE s.[name] = '{{ logging.get_audit_schema() | replace('"', "") }}'
+             AND t.name = '{{ logging.get_audit_relation().identifier }}'
+             AND t.type = 'U')
     EXEC('CREATE TABLE {{ logging.get_audit_relation() | replace('"', "") }} 
             (
        event_name       varchar(512),
